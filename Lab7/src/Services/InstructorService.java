@@ -280,6 +280,133 @@ public class InstructorService extends JFrame {
             JOptionPane.showMessageDialog(this, "Course updated successfully!");
         }
     }
+    
+    private void deleteCourse() {
+        int selectedRow = coursesTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a course to delete.");
+            return;
+        }
+
+        String courseId = (String) coursesTableModel.getValueAt(selectedRow, 0);
+        Course course = findCourseById(courseId);
+        if (course == null) return;
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Are you sure you want to delete the course: " + course.getTitle() + "?\nThis will also delete all associated lessons.",
+            "Confirm Delete", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            courses.remove(course);
+            lessons.removeIf(lesson -> lesson.getCourseId().equals(courseId));
+            JsonDatabaseManager.saveCourses(courses);
+            JsonDatabaseManager.saveLessons(lessons);
+            loadInstructorCourses();
+            JOptionPane.showMessageDialog(this, "Course deleted successfully!");
+        }
+    }
+
+    private void addLesson() {
+        List<Course> instructorCourses = getInstructorCourses();
+        if (instructorCourses.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please create a course first before adding lessons.");
+            return;
+        }
+
+        JComboBox<Course> courseCombo = new JComboBox<>(instructorCourses.toArray(new Course[0]));
+        JTextField titleField = new JTextField();
+        JSpinner orderSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
+        JTextArea contentArea = new JTextArea(10, 30);
+        contentArea.setLineWrap(true);
+        JScrollPane contentScroll = new JScrollPane(contentArea);
+
+        Object[] message = {
+            "Course:", courseCombo,
+            "Title:", titleField,
+            "Order:", orderSpinner,
+            "Content:", contentScroll
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, message, "Add New Lesson", 
+            JOptionPane.OK_CANCEL_OPTION);
+        
+        if (option == JOptionPane.OK_OPTION) {
+            String title = titleField.getText().trim();
+            String content = contentArea.getText().trim();
+            Course selectedCourse = (Course) courseCombo.getSelectedItem();
+            
+            if (title.isEmpty() || content.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Title and content cannot be empty!");
+                return;
+            }
+
+            Lesson newLesson = new Lesson(
+                generateId(),
+                title,
+                content,
+                (Integer) orderSpinner.getValue(),
+                selectedCourse.getId()
+            );
+
+            lessons.add(newLesson);
+            JsonDatabaseManager.saveLessons(lessons);
+            loadAllLessons();
+            JOptionPane.showMessageDialog(this, "Lesson added successfully!");
+        }
+    }
+
+    private void editLesson() {
+        int selectedRow = lessonsTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a lesson to edit.");
+            return;
+        }
+
+        String lessonId = (String) lessonsTableModel.getValueAt(selectedRow, 0);
+        Lesson lesson = findLessonById(lessonId);
+        if (lesson == null) return;
+
+        List<Course> instructorCourses = getInstructorCourses();
+        JComboBox<Course> courseCombo = new JComboBox<>(instructorCourses.toArray(new Course[0]));
+        courseCombo.setSelectedItem(findCourseById(lesson.getCourseId()));
+
+        JTextField titleField = new JTextField(lesson.getTitle());
+        JSpinner orderSpinner = new JSpinner(new SpinnerNumberModel(lesson.getOrder(), 1, 100, 1));
+        JTextArea contentArea = new JTextArea(lesson.getContent(), 10, 30);
+        contentArea.setLineWrap(true);
+        JScrollPane contentScroll = new JScrollPane(contentArea);
+
+        Object[] message = {
+            "Course:", courseCombo,
+            "Title:", titleField,
+            "Order:", orderSpinner,
+            "Content:", contentScroll
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, message, "Edit Lesson", 
+            JOptionPane.OK_CANCEL_OPTION);
+        
+        if (option == JOptionPane.OK_OPTION) {
+            String title = titleField.getText().trim();
+            String content = contentArea.getText().trim();
+            Course selectedCourse = (Course) courseCombo.getSelectedItem();
+            
+            if (title.isEmpty() || content.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Title and content cannot be empty!");
+                return;
+            }
+
+            lesson.setTitle(title);
+            lesson.setContent(content);
+            lesson.setOrder((Integer) orderSpinner.getValue());
+            lesson.setCourseId(selectedCourse.getId());
+            
+            JsonDatabaseManager.saveLessons(lessons);
+            loadAllLessons();
+            JOptionPane.showMessageDialog(this, "Lesson updated successfully!");
+        }
+    }
+
 
 
 
