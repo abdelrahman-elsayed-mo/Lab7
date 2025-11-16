@@ -1,10 +1,44 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package Services;
+import BackEnd.*; 
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+import java.util.*;
 
 
-public class InstructorService {
+public class InstructorService extends JFrame {
     
+     private String currentInstructorId;
+    private List<Course> courses;
+    private List<Lesson> lessons;
+    private List<Student> students;
+
+    private JTable coursesTable;
+    private JTable lessonsTable;
+    private JTable studentsTable;
+    private DefaultTableModel coursesTableModel;
+    private DefaultTableModel lessonsTableModel;
+    private DefaultTableModel studentsTableModel;
+
+    private JButton createCourseButton;
+    private JButton editCourseButton;
+    private JButton deleteCourseButton;
+    private JButton addLessonButton;
+    private JButton editLessonButton;
+    private JButton deleteLessonButton;
+    private JButton viewStudentsButton;
+
+    public InstructorService(String instructorId) {
+        this.currentInstructorId = instructorId;
+        initializeData();
+        initializeUI();
+        loadInstructorCourses();
+    }
+
+   
 }
