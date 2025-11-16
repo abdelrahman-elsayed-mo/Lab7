@@ -1,6 +1,7 @@
 
 package Services;
-import BackEnd.*; 
+import BackEnd.*;
+import databse.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -38,6 +39,27 @@ public class InstructorService extends JFrame {
         initializeData();
         initializeUI();
         loadInstructorCourses();
+    }
+
+    private void initializeData() {
+        courses = JsonDatabaseManager.loadCourses();
+        lessons = JsonDatabaseManager.loadLessons();
+        students = JsonDatabaseManager.loadStudents();
+    }
+
+    private void initializeUI() {
+        setTitle("Instructor Dashboard");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(1000, 700);
+        setLocationRelativeTo(null);
+
+        JTabbedPane tabbedPane = new JTabbedPane();
+
+        tabbedPane.addTab("Courses", createCoursesPanel());
+        tabbedPane.addTab("Lessons", createLessonsPanel());
+        tabbedPane.addTab("Enrolled Students", createStudentsPanel());
+
+        add(tabbedPane);
     }
 
    
