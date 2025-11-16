@@ -5,9 +5,22 @@
 package databse;
 
 
+
 import BackEnd.Course;
+import BackEnd.Instructor;
 import BackEnd.Student;
 import BackEnd.User;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,15 +30,79 @@ import java.util.UUID;
 
 public class JsonDatabaseManager {
 
+   
+
     private static final String USERS_FILE = "users.json";
     private static final String COURSES_FILE = "courses.json";
 
     private Map<String, User> userDatabase;
     private Map<String, Course> courseDatabase;
+    private Gson gson;
 
     public JsonDatabaseManager() {
-        this.userDatabase = new HashMap<>();
-        this.courseDatabase = new HashMap<>();
+        RuntimeTypeAdapterFactory<User> adapter = RuntimeTypeAdapterFactory
+                .of(User.class, "role")
+                .registerSubtype(Student.class, "Student")
+                .registerSubtype(Instructor.class, "Instructor");
+
+        this.gson = new GsonBuilder()
+                .registerTypeAdapterFactory(adapter)
+                .setPrettyPrinting()
+                .create();
+
+        this.userDatabase = loadUsers();
+        this.courseDatabase = loadCourses();
+    }
+
+    private Map<String, User> loadUsers() {
+        try (FileReader reader = new FileReader(USERS_FILE)) {
+            Type type = new TypeToken<HashMap<String, User>>() {}.getType();
+            Map<String, User> users = gson.fromJson(reader, type);
+            return users != null ? users : new HashMap<>();
+        } catch (IOException e) {
+            return new HashMap<>();
+        }
+    }
+
+    private Map<String, Course> loadCourses() {
+        try (FileReader reader = new FileReader(COURSES_FILE)) {
+            Type type = new TypeToken<HashMap<String, Course>>() {}.getType();
+            Map<String, Course> courses = gson.fromJson(reader, type);
+            return courses != null ? courses : new HashMap<>();
+        } catch (IOException e) {
+            return new HashMap<>();
+        }
+    }
+
+    private void saveUsers() {
+        try (FileWriter writer = new FileWriter(USERS_FILE)) {
+            gson.toJson(this.userDatabase, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveCourses() {
+        try (FileWriter writer = new FileWriter(COURSES_FILE)) {
+            gson.toJson(this.courseDatabase, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void saveUser(User user) {
+        userDatabase.put(user.getUserId(), user);
+        saveUsers();
+    }
+
+    public void saveCourse(Course course) {
+        courseDatabase.put(course.getCourseId(), course);
+        saveCourses();
+    }
+
+    public void deleteCourse(String courseId) {
+        courseDatabase.remove(courseId);
+        saveCourses();
     }
 
     public User getUserByEmail(String email) {
@@ -36,7 +113,7 @@ public class JsonDatabaseManager {
         }
         return null;
     }
-    
+
     public User getUserById(String userId) {
         return userDatabase.get(userId);
     }
@@ -50,26 +127,14 @@ public class JsonDatabaseManager {
         return null;
     }
 
-    public void saveUser(User user) {
-        userDatabase.put(user.getUserId(), user);
-    }
-
     public String generateNewUserId() {
         return UUID.randomUUID().toString();
-    }
-
-    public void saveCourse(Course course) {
-        courseDatabase.put(course.getCourseId(), course);
-    }
-    
-    public void deleteCourse(String courseId) {
-        courseDatabase.remove(courseId);
     }
 
     public Course getCourseById(String courseId) {
         return courseDatabase.get(courseId);
     }
-    
+
     public Collection<Course> getAllCourses() {
         return courseDatabase.values();
     }
@@ -80,13 +145,10 @@ public class JsonDatabaseManager {
         if (course != null) {
             for (String studentId : course.getStudents()) {
                 User user = getUserById(studentId);
-                
-                
-                if (user instanceof Student student) {
-                    
+              if (user instanceof Student) {
+                    Student student = (Student) user;
                     enrolledStudents.add(student);
                 }
-                
             }
         }
         return enrolledStudents;
