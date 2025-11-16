@@ -406,6 +406,95 @@ public class InstructorService extends JFrame {
             JOptionPane.showMessageDialog(this, "Lesson updated successfully!");
         }
     }
+    
+    private void deleteLesson() {
+        int selectedRow = lessonsTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a lesson to delete.");
+            return;
+        }
+
+        String lessonId = (String) lessonsTableModel.getValueAt(selectedRow, 0);
+        Lesson lesson = findLessonById(lessonId);
+        if (lesson == null) return;
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Are you sure you want to delete the lesson: " + lesson.getTitle() + "?",
+            "Confirm Delete", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            lessons.remove(lesson);
+            JsonDatabaseManager.saveLessons(lessons);
+            loadAllLessons();
+            JOptionPane.showMessageDialog(this, "Lesson deleted successfully!");
+        }
+    }
+
+    private void viewEnrolledStudents() {
+        int selectedRow = coursesTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a course to view enrolled students.");
+            return;
+        }
+
+        String courseId = (String) coursesTableModel.getValueAt(selectedRow, 0);
+        Course course = findCourseById(courseId);
+        if (course == null) return;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Enrolled Students for: ").append(course.getTitle()).append("\n\n");
+        
+        if (course.getEnrolledStudentIds().isEmpty()) {
+            sb.append("No students enrolled yet.");
+        } else {
+            for (String studentId : course.getEnrolledStudentIds()) {
+                Student student = findStudentById(studentId);
+                if (student != null) {
+                    sb.append("• ").append(student.getName()).append(" (").append(student.getEmail()).append(")\n");
+                }
+            }
+        }
+
+        JOptionPane.showMessageDialog(this, sb.toString(), "Enrolled Students", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private Course findCourseById(String id) {
+        return courses.stream()
+                .filter(course -> course.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Lesson findLessonById(String id) {
+        return lessons.stream()
+                .filter(lesson -> lesson.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Student findStudentById(String id) {
+        return students.stream()
+                .filter(student -> student.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private List<Course> getInstructorCourses() {
+        List<Course> instructorCourses = new ArrayList<>();
+        for (Course course : courses) {
+            if (course.getInstructorId().equals(currentInstructorId)) {
+                instructorCourses.add(course);
+            }
+        }
+        return instructorCourses;
+    }
+
+    private String generateId() {
+        return UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    
+    
 
 
 
