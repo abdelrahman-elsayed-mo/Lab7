@@ -5,6 +5,84 @@
 package Services;
 
 
+import BackEnd.Course;
+import BackEnd.Lesson;
+import BackEnd.Student;
+import BackEnd.User;
+import databse.JsonDatabaseManager;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 public class StudentService {
+
+    private JsonDatabaseManager dbManager;
+    private Student currentStudent;
+
+    public StudentService(JsonDatabaseManager dbManager, User currentUser) {
+        this.dbManager = dbManager;
+        if (currentUser instanceof Student student) {
+            this.currentStudent = student;
+        } else {
+            throw new IllegalArgumentException("User must be a Student");
+        }
+    }
+
+    public Collection<Course> browseAvailableCourses() {
+        return dbManager.getAllCourses();
+    }
+
+    public boolean enrollInCourse(String courseId) {
+        Course course = (Course) dbManager.getCourseById(courseId);
+        if (course == null) {
+            return false;
+        }
+        
+        currentStudent.enrollInCourse(courseId);
+        course.addStudent(currentStudent.getUserId());
+        
+        dbManager.saveUser(currentStudent);
+        dbManager.saveCourse(course);
+        return true;
+    }
+
+    public List<Course> viewEnrolledCourses() {
+        List<Course> courses = new ArrayList<>();
+        for (String courseId : currentStudent.getEnrolledCourses()) {
+            Course course = (Course) dbManager.getCourseById(courseId);
+            if (course != null) {
+                courses.add(course);
+            }
+        }
+        return courses;
+    }
+
+    public List<Lesson> accessLessons(String courseId) {
+        Course course = (Course) dbManager.getCourseById(courseId);
+        if (course != null && currentStudent.getEnrolledCourses().contains(courseId)) {
+            return course.getLessons();
+        }
+        return new ArrayList<>();
+    }
+
+    public boolean markLessonAsCompleted(String courseId, String lessonId) {
+        Course course = (Course) dbManager.getCourseById(courseId);
+        if (course == null || course.getLessonById(lessonId) == null) {
+            return false;
+        }
+        
+        boolean updated = currentStudent.markLessonAsCompleted(courseId, lessonId);
+        if (updated) {
+            dbManager.saveUser(currentStudent);
+        }
+        return updated;
+    }
     
+    public double getCourseProgress(String courseId) {
+        Course course = (Course) dbManager.getCourseById(courseId);
+        if (course == null) {
+            return 0.0;
+        }
+        return currentStudent.getCourseProgressPercentage(course);
+    }
 }
