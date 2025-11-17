@@ -27,9 +27,10 @@ public class CourseService {
         return dbManager.getAllCourses();
     }
 
-    public Object getCourseDetails(String courseId) {
-        return dbManager.getCourseById(courseId);
-    }
+   public Course getCourseDetails(String courseId) {
+    return dbManager.getCourseById(courseId);
+}
+
 
     public List<Lesson> getCourseLessons(String courseId) {
         Course course = dbManager.getCourseById(courseId);
@@ -37,5 +38,9 @@ public class CourseService {
             return course.getLessons();
         }
         return new ArrayList<>();
+    }
+    
+    public Lesson getLessonById(String lessonId){
+        return dbManager.getLessonById(lessonId);
     }
 }
