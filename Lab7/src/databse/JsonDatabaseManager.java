@@ -8,6 +8,7 @@ package databse;
 
 import BackEnd.Course;
 import BackEnd.Instructor;
+import BackEnd.Lesson;
 import BackEnd.Student;
 import BackEnd.User;
 
@@ -153,4 +154,17 @@ public class JsonDatabaseManager {
         }
         return enrolledStudents;
     }
+    
+    public Lesson getLessonById(String lessonId) {
+    for (Course course : courseDatabase.values()) {
+        if (course.getLessons() != null) {
+            for (BackEnd.Lesson lesson : course.getLessons()) {
+                if (lesson.getLessonId().equals(lessonId)) {
+                    return lesson;
+                }
+            }
+        }
+    }
+    return null; // lesson not found
+}
 }
