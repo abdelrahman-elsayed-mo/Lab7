@@ -1,8 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package FrontEnd;
+
 import Services.*;
 import BackEnd.*;
 import databse.*;
@@ -10,12 +7,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-/**
- *
- * @author DELL
- */
-public class LoginFrame extends JFrame  {
-     private UserService userService;
+
+public class LoginFrame extends JFrame {
+    private UserService userService;
     private JTextField txtEmail;
     private JPasswordField txtPassword;
     private JButton btnLogin;
@@ -23,7 +17,7 @@ public class LoginFrame extends JFrame  {
     private JLabel lblError;
 
     public LoginFrame(UserService userService) {
-this.userService = userService;
+        this.userService = userService;
         setTitle("Login");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -93,23 +87,47 @@ this.userService = userService;
         String email = txtEmail.getText().trim();
         String password = new String(txtPassword.getPassword());
 
+        lblError.setText("");
+
         if (email.isEmpty() || password.isEmpty()) {
             lblError.setText("Please fill in all fields.");
+            return;
+        }
+
+        
+        if (!email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) {
+            lblError.setText("Invalid email format.");
             return;
         }
 
         User loggedInUser = userService.login(email, password);
 
         if (loggedInUser != null) {
-        dispose(); 
+            dispose(); 
 
-        if (loggedInUser.getRole().equalsIgnoreCase("Student")) {
-            new StudentDashboardFrame(loggedInUser, userService).setVisible(true);
-        } 
-        else if (loggedInUser.getRole().equalsIgnoreCase("Instructor")) {
-            new InstructorDashboard(loggedInUser.getUserId()).setVisible(true);
+            if (loggedInUser.getRole().equalsIgnoreCase("Student")) {
+                JsonDatabaseManager db = new JsonDatabaseManager();
+                new StudentDashboard(db, loggedInUser.getUserId()).setVisible(true);
+            } 
+            else if (loggedInUser.getRole().equalsIgnoreCase("Instructor")) {
+                JsonDatabaseManager db = new JsonDatabaseManager(); // Added for consistency
+                new InstructorDashboard(db, loggedInUser.getUserId()).setVisible(true);
+            }
+        } else {
+            lblError.setText("Invalid email or password.");
         }
-    } else {
-        lblError.setText("Invalid email or password.");
-    }    }
+    }
+    
+    public static void main(String args[]) {
+    JsonDatabaseManager dbManager = new JsonDatabaseManager();
+    UserService userService = new UserService(dbManager);
+
+    java.awt.EventQueue.invokeLater(new Runnable() {
+        public void run() {
+            new LoginFrame(userService).setVisible(true);
+        }
+    });
+
+    
+}
 }

@@ -1,8 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package FrontEnd;
+
 import Services.*;
 import BackEnd.*;
 import databse.*;
@@ -10,12 +7,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-/**
- *
- * @author DELL
- */
+
 public class SignupFrame extends JFrame {
-     private UserService userService;
+    private UserService userService;
     private JTextField txtUsername;
     private JTextField txtEmail;
     private JPasswordField txtPassword;
@@ -118,7 +112,8 @@ public class SignupFrame extends JFrame {
             return;
         }
 
-        if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+       
+        if (!email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) {
             lblError.setText("Invalid email format.");
             return;
         }
@@ -138,7 +133,7 @@ public class SignupFrame extends JFrame {
             new LoginFrame(userService).setVisible(true);
             dispose();
         } else {
-            lblError.setText("Signup failed. Email may already exist.");
+            lblError.setText("Signup failed. Email or username may already exist.");
         }
     }
 }
