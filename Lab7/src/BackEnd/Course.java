@@ -4,6 +4,7 @@
  */
 package BackEnd;
 
+import Utils.IdGenerator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -16,14 +17,16 @@ public class Course {
     private String description;
     private String instructorId;
     private List<Lesson> lessons;
+
     private List<String> students;
 
     public Course(String title, String description, String instructorId) {
-        this.courseId = UUID.randomUUID().toString();
+        this.courseId = new IdGenerator().generateCourseId();
         this.title = title;
         this.description = description;
         this.instructorId = instructorId;
         this.lessons = new ArrayList<>();
+       
         this.students = new ArrayList<>();
     }
 
@@ -85,6 +88,10 @@ public class Course {
             this.students.add(studentId);
         }
     }
+    
+    public boolean removeStudent(String studentId) {
+    return this.students.remove(studentId);
+}
 }
     
 

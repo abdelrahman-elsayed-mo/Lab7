@@ -5,6 +5,7 @@
 package BackEnd;
 
 
+import Utils.IdGenerator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +18,7 @@ public class Lesson {
     private List<String> resources;
 
     public Lesson(String title, String content) {
-        this.lessonId = UUID.randomUUID().toString();
+        this.lessonId = new IdGenerator().generateLessonId();
         this.title = title;
         this.content = content;
         this.resources = new ArrayList<>();
